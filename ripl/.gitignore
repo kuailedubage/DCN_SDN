@@ -1,0 +1,6 @@
+*.pyc
+*~
+ripl.egg-info
+build
+dist
+.idea
