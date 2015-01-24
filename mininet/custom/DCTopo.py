@@ -44,25 +44,22 @@ class BCubeTopo( Topo ):
         if n < 1:
             raise ValueError("Invalid n parameter. It should be >= 1")
         if k < 0:
-            raise ValueError("Invalid k parameter. It should be >= 0")
-        s=[]            
+            raise ValueError("Invalid k parameter. It should be >= 0")           
         # add hosts
         n_hosts =  n**(k + 1)
         for i in xrange(n_hosts):
-            sw=self.addHost( 'h{}'.format( i ) )
-            s.append( sw )
+            self.addHost( 'h{}'.format( i ) )
         # add all layers of switches and connect them to hosts
         for level in xrange(k + 1):
             # i is the horizontal position of a switch a specific level
             for i in xrange(n**k):
                 if level==0:i=n*i 
-                u = len(s)
+                u = len(self.nodes())
                 # add switch at given level
-                sw=self.addSwitch( 's{}-{}'.format( level , u ) )
-                s.append( sw )
+                self.addSwitch( 's{}_{}'.format( level , u ) )
                 hosts = xrange(i, i + n**(level + 1), n**level)
                 for v in hosts:
-                    self.addLink( s[u], s[v] )    
+                    self.addLink( self.nodes()[u], self.nodes()[v] )  
 
 
 class FatTreeTopo( Topo ):
