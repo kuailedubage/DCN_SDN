@@ -10,7 +10,7 @@ repeated structure.  The main class is StructuredTopo, which augments the
 standard Mininet Topo object with layer metadata plus convenience functions to
 enumerate up, down, and layer edges.
 '''
-from mininet.log import debug
+from mininet.log import debug, info
 from mininet.topo import Topo
 
 
@@ -419,7 +419,7 @@ class FatTreeTopo1(StructuredTopo):
         return (src_port, dst_port)
 
 
-#---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 class FatTreeTopo(StructuredTopo):
     '''Three-layer homogeneous Fat Tree.
     '''
@@ -488,10 +488,10 @@ class FatTreeTopo(StructuredTopo):
 
         def mac_str(self):
             '''Return MAC string'''
-            #if self.nodetype == 'h':
-            #    return "00:00:00:00:00:%02x" %( self.dpid - max( self.sdpidlist ))
-            #else:
-            return "00:00:00:00:00:%02x" % self.dpid
+            if self.nodetype == 'h':
+                return "00:00:00:02:00:%02x" % (self.dpid - max(self.sdpidlist))
+            else:
+                return "00:00:00:01:00:%02x" % self.dpid
 
         def ip_str(self):
             '''Name conversion.
@@ -555,10 +555,6 @@ class FatTreeTopo(StructuredTopo):
         self.id_gen = FatTreeTopo.FatTreeNodeID
         self.numPods = k
         self.aggPerPod = k / 2
-
-        c = []
-        a = []
-        e = []
         s = []
         n_core = ((k // 2) ** 2) // r
 
@@ -568,9 +564,8 @@ class FatTreeTopo(StructuredTopo):
             core_switch_id = self.id_gen(dpid, 'sc').name_str()
             core_opts = self.def_nopts(self.LAYER_CORE, core_switch_id)
             self.addSwitch(core_switch_id, **core_opts)
-            debug("Added core_switch %s, dpid = %s" % (core_switch_id, dpid) + "\n")
-            c.append(core_switch_id)
             s.append(core_switch_id)
+            # info("Added core_switch %s, dpid = %s" % (core_switch_id, dpid) + "\n")
 
         # Create aggregation and edge nodes and connect them
         for pod in xrange(self.numPods):
@@ -585,17 +580,15 @@ class FatTreeTopo(StructuredTopo):
                 agg_switch_id = self.id_gen(dpid, 'sa').name_str()
                 agg_opts = self.def_nopts(self.LAYER_AGG, agg_switch_id)
                 self.addSwitch(agg_switch_id, **agg_opts)
-                debug("Added agg_switch  %s, dpid = %s" % (agg_switch_id, dpid) + "\n")
-                a.append(agg_switch_id)
                 s.append(agg_switch_id)
+                # info("Added agg_switch  %s, dpid = %s" % (agg_switch_id, dpid) + "\n")
             for j in edge_nodes:
                 dpid = j
                 edge_switch_id = self.id_gen(dpid, 'se').name_str()
                 edge_opts = self.def_nopts(self.LAYER_EDGE, edge_switch_id)
                 self.addSwitch(edge_switch_id, **edge_opts)
-                debug("Added edge_switch %s, dpid = %s" % (edge_switch_id, dpid) + "\n")
-                e.append(edge_switch_id)
                 s.append(edge_switch_id)
+                # info("Added edge_switch %s, dpid = %s" % (edge_switch_id, dpid) + "\n")
             for aa in aggr_nodes:
                 for ee in edge_nodes:
                     self.addLink(s[aa - 1], s[ee - 1])
@@ -608,16 +601,17 @@ class FatTreeTopo(StructuredTopo):
 
         # Create hosts and connect them to edge switches
         count = len(s) + 1
-        for sw in e:
+        for sw in self.layer_nodes(self.LAYER_EDGE):
             for i in xrange(k / 2):
                 dpid = count
                 host_id = self.id_gen(dpid, 'h').name_str()
                 host_opts = self.def_nopts(self.LAYER_HOST, host_id)
                 self.addHost(host_id, **host_opts)
-                debug("Added %s, dpid = %s" % (host_id, dpid) + "\n")
+                # info("Added %s, dpid = %s" % (host_id, host_opts) + "\n")
                 self.addLink(sw, host_id)
                 count += 1
-#---------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------
 
 
 class BCubeTopo(StructuredTopo):
@@ -698,20 +692,22 @@ class BCubeTopo(StructuredTopo):
         for i in xrange(n_hosts):
             hname = self.id_gen(1, i/n, i % n).name_str()
             h_opts = self.def_nopts(-1, hname)
+            # info("add %s:%s\n" % (hname, h_opts))
             self.addHost(hname, **h_opts)
         # add switches according level and connect with hosts
         for level in xrange(k + 1):
             # i is the horizontal position of a switch a specific level
             for i in xrange(n**k):
-                if level == 0:
-                    i = n*i
                 # add switch at given level
                 sid = len(self.layer_nodes(level))
                 sname = self.id_gen(2, level, sid).name_str()
                 s_opts = self.def_nopts(level, sname)
+                # info("1add %s:%s\n" % (sname, s_opts))
                 sw = self.addSwitch(sname, **s_opts)
-                hosts = xrange(i, i + n**(level + 1), n**level)
+                m = i % (n**level)+i/(n**level)*(n**(level+1))
+                hosts = xrange(m, m + n**(level + 1), n**level)
                 # add links between hosts and switch
                 for v in hosts:
+                    # info("2add %s %s\n" % (sname, self.nodes()[v]))
                     self.addLink(sw, self.nodes()[v])
 
