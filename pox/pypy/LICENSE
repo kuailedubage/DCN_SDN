@@ -1,0 +1,606 @@
+License
+=======
+
+Except when otherwise stated (look for LICENSE files in directories or
+information at the beginning of each file) all software and documentation in
+the 'rpython', 'pypy', 'ctype_configure', 'dotviewer', 'demo', and 'lib_pypy'
+directories is licensed as follows: 
+
+    The MIT License
+
+    Permission is hereby granted, free of charge, to any person 
+    obtaining a copy of this software and associated documentation 
+    files (the "Software"), to deal in the Software without 
+    restriction, including without limitation the rights to use, 
+    copy, modify, merge, publish, distribute, sublicense, and/or 
+    sell copies of the Software, and to permit persons to whom the 
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included 
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+    DEALINGS IN THE SOFTWARE.
+
+
+PyPy Copyright holders 2003-2014
+----------------------------------- 
+
+Except when otherwise stated (look for LICENSE files or information at
+the beginning of each file) the files in the 'pypy' directory are each
+copyrighted by one or more of the following people and organizations:    
+
+  Armin Rigo
+  Maciej Fijalkowski
+  Carl Friedrich Bolz
+  Antonio Cuni
+  Amaury Forgeot d'Arc
+  Samuele Pedroni
+  Alex Gaynor
+  Michael Hudson
+  David Schneider
+  Matti Picus
+  Brian Kearns
+  Philip Jenvey
+  Holger Krekel
+  Christian Tismer
+  Hakan Ardo
+  Benjamin Peterson
+  Manuel Jacob
+  Anders Chrigstrom
+  Eric van Riet Paap
+  Ronan Lamy
+  Wim Lavrijsen
+  Richard Emslie
+  Alexander Schremmer
+  Dan Villiom Podlaski Christiansen
+  Lukas Diekmann
+  Sven Hager
+  Anders Lehmann
+  Aurelien Campeas
+  Niklaus Haldimann
+  Remi Meier
+  Camillo Bruni
+  Laura Creighton
+  Toon Verwaest
+  Leonardo Santagada
+  Seo Sanghyeon
+  Romain Guillebert
+  Justin Peel
+  Ronny Pfannschmidt
+  David Edelsohn
+  Anders Hammarquist
+  Jakub Gustak
+  Guido Wesdorp
+  Lawrence Oluyede
+  Bartosz Skowron
+  Gregor Wegberg
+  Daniel Roberts
+  Niko Matsakis
+  Adrien Di Mascio
+  Alexander Hesse
+  Ludovic Aubry
+  Jacob Hallen
+  Jason Creighton
+  Alex Martelli
+  Michal Bendowski
+  Jan de Mooij
+  stian
+  Michael Foord
+  Stephan Diehl
+  Tyler Wade
+  Stefan Schwarzer
+  Valentino Volonghi
+  Tomek Meka
+  Patrick Maupin
+  Bob Ippolito
+  Bruno Gola
+  Jean-Paul Calderone
+  Timo Paulssen
+  Squeaky
+  Alexandre Fayolle
+  Simon Burton
+  Marius Gedminas
+  Martin Matusiak
+  Konstantin Lopuhin
+  John Witulski
+  Wenzhu Man
+  Greg Price
+  Dario Bertini
+  Mark Pearse
+  Simon Cross
+  Ivan Sichmann Freitas
+  Andreas Stührk
+  Jean-Philippe St. Pierre
+  Guido van Rossum
+  Pavel Vinogradov
+  Stefano Rivera
+  Paweł Piotr Przeradowski
+  Paul deGrandis
+  Ilya Osadchiy
+  Tobias Oberstein
+  Adrian Kuhn
+  Boris Feigin
+  tav
+  Taavi Burns
+  Georg Brandl
+  Laurence Tratt
+  Bert Freudenberg
+  Stian Andreassen
+  Wanja Saatkamp
+  Gerald Klix
+  Mike Blume
+  Oscar Nierstrasz
+  Stefan H. Muller
+  Edd Barrett
+  Jeremy Thurgood
+  Rami Chowdhury
+  Tobias Pape
+  David Malcolm
+  Eugene Oden
+  Henry Mason
+  Vasily Kuznetsov
+  Preston Timmons
+  Jeff Terrace
+  David Ripton
+  Dusty Phillips
+  Lukas Renggli
+  Guenter Jantzen
+  Ned Batchelder
+  Amit Regmi
+  Ben Young
+  Nicolas Chauvat
+  Andrew Durdin
+  Andrew Chambers
+  Michael Schneider
+  Nicholas Riley
+  Jason Chu
+  Igor Trindade Oliveira
+  Tim Felgentreff
+  Rocco Moretti
+  Gintautas Miliauskas
+  Michael Twomey
+  Lucian Branescu Mihaila
+  Gabriel Lavoie
+  Olivier Dormond
+  Jared Grubb
+  Karl Bartel
+  Brian Dorsey
+  Victor Stinner
+  Andrews Medina
+  Stuart Williams
+  Jasper Schulz
+  Christian Hudon
+  Toby Watson
+  Antoine Pitrou
+  Aaron Iles
+  Michael Cheng
+  Justas Sadzevicius
+  Gasper Zejn
+  anatoly techtonik
+  Neil Shepperd
+  Mikael Schönenberg
+  Elmo M?ntynen
+  Jonathan David Riehl
+  Stanislaw Halik
+  Anders Qvist
+  Corbin Simpson
+  Chirag Jadwani
+  Beatrice During
+  Alex Perry
+  Vincent Legoll
+  Alan McIntyre
+  Alexander Sedov
+  Christopher Pope
+  Christian Tismer 
+  Marc Abramowitz
+  Dan Stromberg
+  Stefano Parmesan
+  Alexis Daboville
+  Jens-Uwe Mager
+  Carl Meyer
+  Karl Ramm
+  Pieter Zieschang
+  Sebastian Pawluś
+  Gabriel
+  Lukas Vacek
+  Andrew Dalke
+  Sylvain Thenault
+  Nathan Taylor
+  Vladimir Kryachko
+  Arjun Naik
+  Attila Gobi
+  Jacek Generowicz
+  Alejandro J. Cura
+  Jacob Oscarson
+  Travis Francis Athougies
+  Ryan Gonzalez
+  Ian Foote
+  Kristjan Valur Jonsson
+  Neil Blakey-Milner
+  Lutz Paelike
+  Lucio Torre
+  Lars Wassermann
+  Valentina Mukhamedzhanova
+  Henrik Vendelbo
+  Dan Buch
+  Miguel de Val Borro
+  Artur Lisiecki
+  Sergey Kishchenko
+  Yichao Yu
+  Ignas Mikalajunas
+  Christoph Gerum
+  Martin Blais
+  Lene Wagner
+  Tomo Cocoa
+  roberto@goyle
+  Yury V. Zaytsev
+  Anna Katrina Dominguez
+  William Leslie
+  Bobby Impollonia
+  timo@eistee.fritz.box
+  Andrew Thompson
+  Yusei Tahara
+  Ben Darnell
+  Roberto De Ioris
+  Juan Francisco Cantero Hurtado
+  Godefroid Chappelle
+  Joshua Gilbert
+  Dan Colish
+  Christopher Armstrong
+  Michael Hudson-Doyle
+  Anders Sigfridsson
+  Yasir Suhail
+  Jason Michalski
+  rafalgalczynski@gmail.com
+  Floris Bruynooghe
+  Laurens Van Houtven
+  Akira Li
+  Gustavo Niemeyer
+  Stephan Busemann
+  Rafał Gałczyński
+  Christian Muirhead
+  James Lan
+  shoma hosaka
+  Daniel Neuh?user
+  Matthew Miller
+  Buck Golemon
+  Konrad Delong
+  Dinu Gherman
+  Chris Lambacher
+  coolbutuseless@gmail.com
+  Rodrigo Araújo
+  Jim Baker
+  James Robert
+  Armin Ronacher
+  Brett Cannon
+  yrttyr
+  aliceinwire
+  OlivierBlanvillain
+  Zooko Wilcox-O Hearn
+  Tomer Chachamu
+  Christopher Groskopf
+  Asmo Soinio
+  Stefan Marr
+  jiaaro
+  Mads Kiilerich
+  opassembler.py
+  Antony Lee
+  Jim Hunziker
+  Markus Unterwaditzer
+  Even Wiik Thomassen
+  jbs
+  soareschen
+  Kurt Griffiths
+  Mike Bayer
+  Matthew Miller
+  Flavio Percoco
+  Kristoffer Kleine
+  yasirs
+  Michael Chermside
+  Anna Ravencroft
+  Dan Crosta
+  Julien Phalip
+  Dan Loewenherz
+
+  Heinrich-Heine University, Germany 
+  Open End AB (formerly AB Strakt), Sweden
+  merlinux GmbH, Germany 
+  tismerysoft GmbH, Germany 
+  Logilab Paris, France 
+  DFKI GmbH, Germany 
+  Impara, Germany
+  Change Maker, Sweden 
+  University of California Berkeley, USA
+  Google Inc.
+  King's College London
+
+The PyPy Logo as used by http://speed.pypy.org and others was created
+by Samuel Reis and is distributed on terms of Creative Commons Share Alike
+License.
+ 
+License for 'lib-python/2.7'
+============================
+
+Except when otherwise stated (look for LICENSE files or copyright/license
+information at the beginning of each file) the files in the 'lib-python/2.7'
+directory are all copyrighted by the Python Software Foundation and licensed
+under the Python Software License of which you can find a copy here:
+http://www.python.org/doc/Copyright.html 
+
+License for 'pypy/module/unicodedata/'
+======================================
+
+The following files are from the website of The Unicode Consortium
+at http://www.unicode.org/.  For the terms of use of these files, see
+http://www.unicode.org/terms_of_use.html .  Or they are derived from
+files from the above website, and the same terms of use apply.
+
+    CompositionExclusions-*.txt
+    EastAsianWidth-*.txt
+    LineBreak-*.txt
+    UnicodeData-*.txt
+    UnihanNumeric-*.txt
+
+License for 'dotviewer/font/'
+=============================
+
+Copyright (C) 2008 The Android Open Source Project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+  
+     http://www.apache.org/licenses/LICENSE-2.0
+  
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Detailed license information is contained in the NOTICE file in the
+directory.
+
+License for 'Tcl/Tk'
+====================
+
+This copy of PyPy includes a copy of Tcl/Tk, which is licensed under the following terms:
+
+This software is copyrighted by the Regents of the University of
+California, Sun Microsystems, Inc., and other parties.  The following
+terms apply to all files associated with the software unless explicitly
+disclaimed in individual files.
+
+The authors hereby grant permission to use, copy, modify, distribute,
+and license this software and its documentation for any purpose, provided
+that existing copyright notices are retained in all copies and that this
+notice is included verbatim in any distributions. No written agreement,
+license, or royalty fee is required for any of the authorized uses.
+Modifications to this software may be copyrighted by their authors
+and need not follow the licensing terms described here, provided that
+the new terms are clearly indicated on the first page of each file where
+they apply.
+
+IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
+DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
+IS PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DISTRIBUTORS HAVE
+NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+MODIFICATIONS.
+
+GOVERNMENT USE: If you are acquiring this software on behalf of the
+U.S. government, the Government shall have only "Restricted Rights"
+in the software and related documentation as defined in the Federal 
+Acquisition Regulations (FARs) in Clause 52.227.19 (c) (2).  If you
+are acquiring the software on behalf of the Department of Defense, the
+software shall be classified as "Commercial Computer Software" and the
+Government shall have only "Restricted Rights" as defined in Clause
+252.227-7013 (c) (1) of DFARs.  Notwithstanding the foregoing, the
+authors grant the U.S. Government and others acting in its behalf
+permission to use and distribute the software in accordance with the
+terms specified in this license.
+License for 'bzip2'
+===================
+
+This copy of PyPy includes a copy of bzip2, which is licensed under the following terms:
+
+--------------------------------------------------------------------------
+
+This program, "bzip2", the associated library "libbzip2", and all
+documentation, are copyright (C) 1996-2010 Julian R Seward.  All
+rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. The origin of this software must not be misrepresented; you must 
+   not claim that you wrote the original software.  If you use this 
+   software in a product, an acknowledgment in the product 
+   documentation would be appreciated but is not required.
+
+3. Altered source versions must be plainly marked as such, and must
+   not be misrepresented as being the original software.
+
+4. The name of the author may not be used to endorse or promote 
+   products derived from this software without specific prior written 
+   permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Julian Seward, jseward@bzip.org
+bzip2/libbzip2 version 1.0.6 of 6 September 2010
+
+--------------------------------------------------------------------------
+License for 'openssl'
+=====================
+
+This copy of PyPy includes a copy of openssl, which is licensed under the following terms:
+
+  LICENSE ISSUES
+  ==============
+
+  The OpenSSL toolkit stays under a dual license, i.e. both the conditions of
+  the OpenSSL License and the original SSLeay license apply to the toolkit.
+  See below for the actual license texts. Actually both licenses are BSD-style
+  Open Source licenses. In case of any license issues related to OpenSSL
+  please contact openssl-core@openssl.org.
+
+  OpenSSL License
+  ---------------
+
+/* ====================================================================
+ * Copyright (c) 1998-2004 The OpenSSL Project.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. All advertising materials mentioning features or use of this
+ *    software must display the following acknowledgment:
+ *    "This product includes software developed by the OpenSSL Project
+ *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+ *
+ * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. For written permission, please contact
+ *    openssl-core@openssl.org.
+ *
+ * 5. Products derived from this software may not be called "OpenSSL"
+ *    nor may "OpenSSL" appear in their names without prior written
+ *    permission of the OpenSSL Project.
+ *
+ * 6. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by the OpenSSL Project
+ *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+ * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This product includes cryptographic software written by Eric Young
+ * (eay@cryptsoft.com).  This product includes software written by Tim
+ * Hudson (tjh@cryptsoft.com).
+ *
+ */
+
+ Original SSLeay License
+ -----------------------
+
+/* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+ * All rights reserved.
+ *
+ * This package is an SSL implementation written
+ * by Eric Young (eay@cryptsoft.com).
+ * The implementation was written so as to conform with Netscapes SSL.
+ * 
+ * This library is free for commercial and non-commercial use as long as
+ * the following conditions are aheared to.  The following conditions
+ * apply to all code found in this distribution, be it the RC4, RSA,
+ * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+ * included with this distribution is covered by the same copyright terms
+ * except that the holder is Tim Hudson (tjh@cryptsoft.com).
+ * 
+ * Copyright remains Eric Young's, and as such any Copyright notices in
+ * the code are not to be removed.
+ * If this package is used in a product, Eric Young should be given attribution
+ * as the author of the parts of the library used.
+ * This can be in the form of a textual message at program startup or
+ * in documentation (online or textual) provided with the package.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    "This product includes cryptographic software written by
+ *     Eric Young (eay@cryptsoft.com)"
+ *    The word 'cryptographic' can be left out if the rouines from the library
+ *    being used are not cryptographic related :-).
+ * 4. If you include any Windows specific code (or a derivative thereof) from 
+ *    the apps directory (application code) you must include an acknowledgement:
+ *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * The licence and distribution terms for any publically available version or
+ * derivative of this code cannot be changed.  i.e. this code cannot simply be
+ * copied and put under another distribution licence
+ * [including the GNU Public Licence.]
+ */
+
+
+
+
+Licenses and Acknowledgements for Incorporated Software
+=======================================================
+
+This section is an incomplete, but growing list of licenses and acknowledgements
+for third-party software incorporated in the PyPy distribution.
+
+gdbm
+----
+
+The gdbm module includes code from gdbm.h, which is distributed under the terms
+of the GPL license version 2 or any later version.  Thus the gdbm module, provided in
+the file lib_pypy/gdbm.py, is redistributed under the terms of the GPL license as
+well.
