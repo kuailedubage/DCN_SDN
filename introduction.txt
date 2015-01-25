@@ -12,9 +12,11 @@ e.g. $cd ~/DCN_SDN/pox
 
        $python pox.py riplpox.riplpox --topo=ft,4,2 --routing=st --mode=proactive samples.pretty_log
 
+如上参数换成 --topo bc,k,n  则构建BCube topo ------ k:层数，n:BCube0所含servers数
+
 如上参数换成 --topo ft1,k  则执行ripl自带胖树topo
 
-最初的topo(不支持riplpox,配合pox原始组件胖树可以ping通,Bcube ping不通):
+最初的topo在DCTopo.py中(不支持riplpox,配合pox原始组件胖树可以ping通,Bcube ping不通):
 //FatTree：sudo mn --custom ~/mininet/custom/DCTopo.py --topo fattree,k=4,r=1 --mac --controller=remote,ip=127.0.0.1,port=6633  
 //BCube： sudo mn --custom ~/mininet/custom/DCTopo.py --topo bcube,k=1,n=4 --mac --controller=remote,ip=127.0.0.1,port=6633   
 //./pox.py samples.pretty_log forwarding.l2_multi openflow.discovery openflow.spanning_tree --no-flood --hold-down

@@ -422,9 +422,6 @@ class FatTreeTopo1(StructuredTopo):
 #---------------------------------------------------------------------------------------------
 class FatTreeTopo(StructuredTopo):
     '''Three-layer homogeneous Fat Tree.
-
-    From "A scalable, commodity data center network architecture, M. Fares et
-    al. SIGCOMM 2008."
     '''
     LAYER_CORE = 0
     LAYER_AGG = 1
@@ -541,6 +538,7 @@ class FatTreeTopo(StructuredTopo):
         '''Init.
 
         @param k switch degree
+        @param r oversubscription ratios
         @param speed bandwidth in Gbps
         '''
         core = StructuredNodeSpec(0, k, None, speed, type_str='core')
@@ -558,11 +556,6 @@ class FatTreeTopo(StructuredTopo):
         self.numPods = k
         self.aggPerPod = k / 2
 
-        #pods = range(0, k)
-        #core_sws = range(1, k / 2 + 1)
-        #agg_sws = range(k / 2, k)
-        #edge_sws = range(0, k / 2)
-        #hosts = range(2, k / 2 + 2)
         c = []
         a = []
         e = []
@@ -624,64 +617,101 @@ class FatTreeTopo(StructuredTopo):
                 debug("Added %s, dpid = %s" % (host_id, dpid) + "\n")
                 self.addLink(sw, host_id)
                 count += 1
+#---------------------------------------------------------------------------------------------
 
 
-'''
-    def port(self, src, dst):
-        Get port number (optional)
+class BCubeTopo(StructuredTopo):
+    '''Bcube.
+    '''
 
-        Note that the topological significance of DPIDs in FatTreeTopo enables
-        this function to be implemented statelessly.
+    class BCubeNodeID(NodeID):
+        '''Fat Tree-specific node.'''
+        def __init__(self, t=0, fir=0, sec=0, dpid=None, name=None):
+            '''Init.
 
-        @param src source switch name
-        @param dst destination switch name
-        @return tuple (src_port, dst_port):
-            src_port: port on source switch leading to the destination switch
-            dst_port: port on destination switch leading to the source switch
-        
-        src_layer = self.layer(src)
-        dst_layer = self.layer(dst)
+            @param dpid dpid
+            '''
+            if dpid:
+                self.type = (dpid & 0xff0000) >> 16
+                self.fir = (dpid & 0xff00) >> 8
+                self.sec = (dpid & 0xff)
+                self.dpid = dpid
+            elif name:
+                self.type = 1 if name[0] == 'h' else 2
+                fir, sec = [int(s) for s in name[1:].split('_')]
+                self.fir = fir
+                self.sec = sec
+                self.dpid = (self.type << 16) + (fir << 8) + sec
+            else:
+                self.type = t
+                self.fir = fir
+                self.sec = sec
+                self.dpid = (t << 16) + (fir << 8) + sec
 
-        src_id = self.id_gen(name = src)
-        dst_id = self.id_gen(name = dst)
+        def __str__(self):
+            s = 'h' if self.type == 1 else 's'
+            return "%s%i_%i" % (s, self.fir, self.sec)
 
-        LAYER_CORE = 0
-        LAYER_AGG = 1
-        LAYER_EDGE = 2
-        LAYER_HOST = 3
+        def name_str(self):
+            '''Return name string'''
+            s = 'h' if self.type == 1 else 's'
+            return "%s%i_%i" % (s, self.fir, self.sec)
 
-        if src_layer == LAYER_HOST and dst_layer == LAYER_EDGE:
-            src_port = 0
-            dst_port = (src_id.host - 2) * 2 + 1
-        elif src_layer == LAYER_EDGE and dst_layer == LAYER_CORE:
-            src_port = (dst_id.sw - 2) * 2
-            dst_port = src_id.pod
-        elif src_layer == LAYER_EDGE and dst_layer == LAYER_AGG:
-            src_port = (dst_id.sw - self.k / 2) * 2
-            dst_port = src_id.sw * 2 + 1
-        elif src_layer == LAYER_AGG and dst_layer == LAYER_CORE:
-            src_port = (dst_id.host - 1) * 2
-            dst_port = src_id.pod
-        elif src_layer == LAYER_CORE and dst_layer == LAYER_AGG:
-            src_port = dst_id.pod
-            dst_port = (src_id.host - 1) * 2
-        elif src_layer == LAYER_AGG and dst_layer == LAYER_EDGE:
-            src_port = dst_id.sw * 2 + 1
-            dst_port = (src_id.sw - self.k / 2) * 2
-        elif src_layer == LAYER_CORE and dst_layer == LAYER_EDGE:
-            src_port = dst_id.pod
-            dst_port = (src_id.sw - 2) * 2
-        elif src_layer == LAYER_EDGE and dst_layer == LAYER_HOST:
-            src_port = (dst_id.host - 2) * 2 + 1
-            dst_port = 0
-        else:
-            raise Exception("Could not find port leading to given dst switch")
+        def mac_str(self):
+            '''Return MAC string'''
+            return "00:00:00:%02x:%02x:%02x" % (self.type, self.fir, self.sec)
 
-        # Shift by one; as of v0.9, OpenFlow ports are 1-indexed.
-        if src_layer != LAYER_HOST:
-            src_port += 1
-        if dst_layer != LAYER_HOST:
-            dst_port += 1
+        def ip_str(self):
+            '''Return IP string'''
+            return "10.%i.%i.%i" % (self.type, self.fir, self.sec)
 
-        return (src_port, dst_port)
-'''
+    def def_nopts(self, layer, name=None):
+        '''Return default dict for a FatTree topo.
+
+        @param layer layer of node
+        @param name name of node
+        @return d dict with layer key/val pair, plus anything else (later)
+        '''
+        d = {'layer': layer}
+        if name:
+            id = self.id_gen(name=name)
+            # For hosts only, set the IP
+            if layer == -1:
+                d.update({'ip': id.ip_str()})
+                d.update({'mac': id.mac_str()})
+            d.update({'dpid': "%016x" % id.dpid})
+        return d
+
+    def __init__(self, k=1, n=4):
+        '''Init.
+
+        @param k levels
+        @param n servers per BCube0
+        @param speed bandwidth in Gbps
+        '''
+        Topo.__init__(self)
+        self.n = n
+        self.k = k
+        self.id_gen = BCubeTopo.BCubeNodeID
+        n_hosts = n**(k + 1)
+        # add host
+        for i in xrange(n_hosts):
+            hname = self.id_gen(1, i/n, i % n).name_str()
+            h_opts = self.def_nopts(-1, hname)
+            self.addHost(hname, **h_opts)
+        # add switches according level and connect with hosts
+        for level in xrange(k + 1):
+            # i is the horizontal position of a switch a specific level
+            for i in xrange(n**k):
+                if level == 0:
+                    i = n*i
+                # add switch at given level
+                sid = len(self.layer_nodes(level))
+                sname = self.id_gen(2, level, sid).name_str()
+                s_opts = self.def_nopts(level, sname)
+                sw = self.addSwitch(sname, **s_opts)
+                hosts = xrange(i, i + n**(level + 1), n**level)
+                # add links between hosts and switch
+                for v in hosts:
+                    self.addLink(sw, self.nodes()[v])
+
