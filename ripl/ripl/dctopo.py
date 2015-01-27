@@ -12,7 +12,7 @@ enumerate up, down, and layer edges.
 '''
 from mininet.log import debug, info
 from mininet.topo import Topo
-
+from mininet.util import natural
 
 PORT_BASE = 1  # starting index for OpenFlow switch ports
 
@@ -175,48 +175,48 @@ class StructuredTopo(Topo):
         edges = [(name, n) for n in self.down_nodes(name)]
         return edges
 
-#    def draw(self, filename = None, edge_width = 1, node_size = 1,
-#             node_color = 'g', edge_color = 'b'):
-#        '''Generate image of RipL network.
-#
-#        @param filename filename w/ext to write; if None, show topo on screen
-#        @param edge_width edge width in pixels
-#        @param node_size node size in pixels
-#        @param node_color node color (ex 'b' , 'green', or '#0000ff')
-#        @param edge_color edge color
-#        '''
-#        import matplotlib.pyplot as plt
-#
-#        pos = {} # pos[vertex] = (x, y), where x, y in [0, 1]
-#        for layer in range(len(self.node_specs)):
-#            v_boxes = len(self.node_specs)
-#            height = 1 - ((layer + 0.5) / v_boxes)
-#
-#            layer_nodes = sorted(self.layer_nodes(layer, False))
-#            h_boxes = len(layer_nodes)
-#            for j, dpid in enumerate(layer_nodes):
-#                pos[dpid] = ((j + 0.5) / h_boxes, height)
-#
-#        fig = plt.figure(1)
-#        fig.clf()
-#        ax = fig.add_axes([0, 0, 1, 1], frameon = False)
-#
-#        draw_networkx_nodes(self.g, pos, ax = ax, node_size = node_size,
-#                               node_color = node_color, with_labels = False)
-#        # Work around networkx bug; does not handle color arrays properly
-#        for edge in self.edges(False):
-#            draw_networkx_edges(self.g, pos, [edge], ax = ax,
-#                                edge_color = edge_color, width = edge_width)
-#
-#        # Work around networkx modifying axis limits
-#        ax.set_xlim(0, 1.0)
-#        ax.set_ylim(0, 1.0)
-#        ax.set_axis_off()
-#
-#        if filename:
-#            plt.savefig(filename)
-#        else:
-#            plt.show()
+    # def draw(self, filename = None, edge_width = 1, node_size = 1,
+    #         node_color = 'g', edge_color = 'b'):
+    #     '''Generate image of RipL network.
+    #
+    #     @param filename filename w/ext to write; if None, show topo on screen
+    #     @param edge_width edge width in pixels
+    #     @param node_size node size in pixels
+    #     @param node_color node color (ex 'b' , 'green', or '#0000ff')
+    #     @param edge_color edge color
+    #     '''
+    #     import matplotlib.pyplot as plt
+    #     import networkx as nx
+    #     pos = {}  # pos[vertex] = (x, y), where x, y in [0, 1]
+    #     for layer in range(len(self.node_specs)):
+    #         v_boxes = len(self.node_specs)
+    #         height = 1 - ((layer + 0.5) / v_boxes)
+    #
+    #         layer_nodes = sorted(self.layer_nodes(layer))
+    #         h_boxes = len(layer_nodes)
+    #         for j, dpid in enumerate(layer_nodes):
+    #             pos[dpid] = ((j + 0.5) / h_boxes, height)
+    #
+    #     fig = plt.figure(1)
+    #     fig.clf()
+    #     ax = fig.add_axes([0, 0, 1, 1], frameon = False)
+    #
+    #     nx.draw_networkx_nodes(self.g, pos, ax = ax, node_size = node_size,
+    #                            node_color = node_color, with_labels = False)
+    #     # Work around networkx bug; does not handle color arrays properly
+    #     for edge in self.g.edges():
+    #         nx.draw_networkx_edges(self.g, pos, [edge], ax = ax,
+    #                             edge_color = edge_color, width = edge_width)
+    #
+    #     # Work around networkx modifying axis limits
+    #     ax.set_xlim(0, 1.0)
+    #     ax.set_ylim(0, 1.0)
+    #     ax.set_axis_off()
+    #
+    #     if filename:
+    #         plt.savefig(filename)
+    #     else:
+    #         plt.show()
 
 
 class FatTreeTopo1(StructuredTopo):
@@ -488,20 +488,20 @@ class FatTreeTopo(StructuredTopo):
 
         def mac_str(self):
             '''Return MAC string'''
-            if self.nodetype == 'h':
-                return "00:00:00:02:00:%02x" % (self.dpid - max(self.sdpidlist))
-            else:
-                return "00:00:00:01:00:%02x" % self.dpid
+            # if self.nodetype == 'h':
+            #     return "00:00:00:02:00:%02x" % (self.dpid - max(self.sdpidlist))
+            # else:
+            return "00:00:00:00:00:%02x" % self.dpid
 
         def ip_str(self):
             '''Name conversion.
 
             @return ip ip as string
             '''
-            if self.nodetype == 'h':
-                return "10.0.0.%i" % (self.dpid - max(self.sdpidlist))
-            else:
-                return "10.0.0.%i" % self.dpid
+            # if self.nodetype == 'h':
+            return "10.0.0.%i" % (self.dpid - max(self.sdpidlist))
+            # else:
+            #     return "10.0.0.%i" % self.dpid
 
     """
     def _add_port(self, src, dst):
@@ -560,8 +560,8 @@ class FatTreeTopo(StructuredTopo):
 
         # Create core nodes
         for i in xrange(n_core):
-            dpid = i + 1
-            core_switch_id = self.id_gen(dpid, 'sc').name_str()
+            # dpid = i + 1
+            core_switch_id = self.id_gen(i + 1, 'sc').name_str()
             core_opts = self.def_nopts(self.LAYER_CORE, core_switch_id)
             self.addSwitch(core_switch_id, **core_opts)
             s.append(core_switch_id)
@@ -576,15 +576,15 @@ class FatTreeTopo(StructuredTopo):
             aggr_nodes = xrange(aggr_start_node, aggr_end_node)
             edge_nodes = xrange(edge_start_node, edge_end_node)
             for i in aggr_nodes:
-                dpid = i
-                agg_switch_id = self.id_gen(dpid, 'sa').name_str()
+                # dpid = i
+                agg_switch_id = self.id_gen(i, 'sa').name_str()
                 agg_opts = self.def_nopts(self.LAYER_AGG, agg_switch_id)
                 self.addSwitch(agg_switch_id, **agg_opts)
                 s.append(agg_switch_id)
                 # info("Added agg_switch  %s, dpid = %s" % (agg_switch_id, dpid) + "\n")
             for j in edge_nodes:
-                dpid = j
-                edge_switch_id = self.id_gen(dpid, 'se').name_str()
+                # dpid = j
+                edge_switch_id = self.id_gen(j, 'se').name_str()
                 edge_opts = self.def_nopts(self.LAYER_EDGE, edge_switch_id)
                 self.addSwitch(edge_switch_id, **edge_opts)
                 s.append(edge_switch_id)
@@ -601,16 +601,70 @@ class FatTreeTopo(StructuredTopo):
 
         # Create hosts and connect them to edge switches
         count = len(s) + 1
-        for sw in self.layer_nodes(self.LAYER_EDGE):
+        xrange(k//r+k//2, k//2)
+        e_s = sorted(self.layer_nodes(self.LAYER_EDGE), key=natural)
+        for sw in e_s:
             for i in xrange(k / 2):
-                dpid = count
-                host_id = self.id_gen(dpid, 'h').name_str()
+                # dpid = count
+                host_id = self.id_gen(count, 'h').name_str()
                 host_opts = self.def_nopts(self.LAYER_HOST, host_id)
                 self.addHost(host_id, **host_opts)
                 # info("Added %s, dpid = %s" % (host_id, host_opts) + "\n")
                 self.addLink(sw, host_id)
                 count += 1
 
+    def draw(self, filename=None, edge_width=1, node_size=1,
+             node_color='g', edge_color='b'):
+        '''Generate image of RipL network.
+
+        @param filename filename w/ext to write; if None, show topo on screen
+        @param edge_width edge width in pixels
+        @param node_size node size in pixels
+        @param node_color node color (ex 'b' , 'green', or '#0000ff')
+        @param edge_color edge color
+        '''
+        import matplotlib.pyplot as plt
+        import networkx as nx
+
+        # def ssort(nodes=None, l=-1):
+        #     if l == 3:
+        #         n = sorted([int(node[1:]) for node in nodes])
+        #         nodes = ['h'+str(node) for node in n]
+        #         return nodes
+        #     else:
+        #         ntype = nodes[0][0:2]
+        #         n = sorted([int(node[2:]) for node in nodes])
+        #         nodes = [ntype + str(node) for node in n]
+        #         return nodes
+        pos = {}  # pos[vertex] = (x, y), where x, y in [0, 1]
+        for layer in range(len(self.node_specs)):
+            v_boxes = len(self.node_specs)
+            height = 1 - ((layer + 0.5) / v_boxes)
+            layer_nodes = sorted(self.layer_nodes(layer), key=natural)
+            h_boxes = len(layer_nodes)
+            for j, dpid in enumerate(layer_nodes):
+                pos[dpid] = ((j + 0.5) / h_boxes, height)
+
+        fig = plt.figure(1)
+        fig.clf()
+        ax = fig.add_axes([0, 0, 1, 1], frameon=False)
+
+        nx.draw_networkx_nodes(self.g, pos, ax=ax, node_size=node_size,
+                               node_color=node_color, with_labels=False)
+        # Work around networkx bug; does not handle color arrays properly
+        for edge in self.g.edges():
+            nx.draw_networkx_edges(self.g, pos, [edge], ax=ax,
+                                   edge_color=edge_color, width=edge_width)
+
+        # Work around networkx modifying axis limits
+        ax.set_xlim(0, 1.0)
+        ax.set_ylim(0, 1.0)
+        ax.set_axis_off()
+
+        if filename:
+            plt.savefig(filename)
+        else:
+            plt.show()
 # ---------------------------------------------------------------------------------------------
 
 
@@ -697,6 +751,8 @@ class BCubeTopo(StructuredTopo):
         # add switches according level and connect with hosts
         for level in xrange(k + 1):
             # i is the horizontal position of a switch a specific level
+            arg1 = n**level
+            arg2 = n**(level + 1)
             for i in xrange(n**k):
                 # add switch at given level
                 sid = len(self.layer_nodes(level))
@@ -704,10 +760,53 @@ class BCubeTopo(StructuredTopo):
                 s_opts = self.def_nopts(level, sname)
                 # info("1add %s:%s\n" % (sname, s_opts))
                 sw = self.addSwitch(sname, **s_opts)
-                m = i % (n**level)+i/(n**level)*(n**(level+1))
-                hosts = xrange(m, m + n**(level + 1), n**level)
+                m = i % arg1+i/arg1*arg2
+                hosts = xrange(m, m + arg2, arg1)
                 # add links between hosts and switch
+                nodeslist = self.nodes()
                 for v in hosts:
                     # info("2add %s %s\n" % (sname, self.nodes()[v]))
-                    self.addLink(sw, self.nodes()[v])
+                    self.addLink(sw, nodeslist[v])
 
+    def draw(self, filename=None, edge_width=1, node_size=1,
+             node_color='g', edge_color='b'):
+        '''Generate image of RipL network.
+
+        @param filename filename w/ext to write; if None, show topo on screen
+        @param edge_width edge width in pixels
+        @param node_size node size in pixels
+        @param node_color node color (ex 'b' , 'green', or '#0000ff')
+        @param edge_color edge color
+        '''
+        import matplotlib.pyplot as plt
+        import networkx as nx
+
+        pos = {}  # pos[vertex] = (x, y), where x, y in [0, 1]
+        for layer in range(-1, self.k + 1):
+            v_boxes = self.k
+            height = ((layer + 1 + 0.5) / (v_boxes + 2))
+            layer_nodes = sorted(self.layer_nodes(layer), key=natural)
+            h_boxes = len(layer_nodes)
+            for j, dpid in enumerate(layer_nodes):
+                pos[dpid] = ((j + 0.5) / h_boxes, height)
+
+        fig = plt.figure(1)
+        fig.clf()
+        ax = fig.add_axes([0, 0, 1, 1], frameon=False)
+
+        nx.draw_networkx_nodes(self.g, pos, ax=ax, node_size=node_size,
+                               node_color=node_color, with_labels=False)
+        # Work around networkx bug; does not handle color arrays properly
+        for edge in self.g.edges():
+            nx.draw_networkx_edges(self.g, pos, [edge], ax=ax,
+                                   edge_color=edge_color, width=edge_width)
+
+        # Work around networkx modifying axis limits
+        ax.set_xlim(0, 1.0)
+        ax.set_ylim(0, 1.0)
+        ax.set_axis_off()
+
+        if filename:
+            plt.savefig(filename)
+        else:
+            plt.show()

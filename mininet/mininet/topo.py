@@ -12,7 +12,7 @@ setup for testing, and can even be emulated with the Mininet package.
 '''
 
 from mininet.util import irange, natural, naturalSeq
-
+from networkx import Graph
 class NodeID(object):
     '''Topo node identifier.'''
     sdpidlist = []
@@ -116,7 +116,7 @@ class Topo(object):
            sopts: default switch options
            lopts: default link options
            calls build()"""
-        self.g = MultiGraph()
+        self.g = Graph()
         self.node_info = {}
         self.link_info = {}  # (src, dst) tuples hash to EdgeInfo objects
         self.hopts = params.pop( 'hopts', {} )

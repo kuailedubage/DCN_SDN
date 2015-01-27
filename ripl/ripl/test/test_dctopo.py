@@ -45,6 +45,10 @@ class testFatTreeTopo(unittest.TestCase):
                     for sw in ft.layer_nodes(1):
                         self.assertEqual(len(ft.up_nodes(sw)), k/(2 * r))
 
+    def testEfficience(self):
+        ft = FatTreeTopo(4, 1)
+        ft.draw('fattree')
+
     # def testLinksPerNode(self):
     #     sizes = xrange(4, 16, 2)
     #     for k in sizes:
@@ -128,7 +132,7 @@ class testBCubeTopo(unittest.TestCase):
         '''Create multiple topos.'''
         levels = xrange(0, 4)
         for k in levels:
-            num = xrange(1, 5)
+            num = xrange(1, 7)
             for n in num:
                 BCubeTopo(k, n)
 
@@ -136,7 +140,7 @@ class testBCubeTopo(unittest.TestCase):
         '''Verify number of hosts, switches, and nodes at each layer.'''
         levels = xrange(0, 4)
         for k in levels:
-            num = xrange(1, 5)
+            num = xrange(1, 7)
             for n in num:
                 bc = BCubeTopo(k, n)
 
@@ -155,7 +159,7 @@ class testBCubeTopo(unittest.TestCase):
         '''test links between nodes'''
         levels = xrange(0, 4)
         for k in levels:
-            num = xrange(1, 5)
+            num = xrange(1, 7)
             for n in num:
                 bc = BCubeTopo(k, n)
                 for h in bc.hosts():
@@ -163,7 +167,15 @@ class testBCubeTopo(unittest.TestCase):
                 for s in bc.switches():
                     self.assertEqual(len(bc.g[s]), n)
 
+    def testEfficience(self):
+        bc = BCubeTopo(1, 4)
+        bc.draw('bcube%s_%s' % (1, 4))
+        # ft = FatTreeTopo(4, 2)
+        # ft.draw('fattree%s_%s' % (4, 2))
+
 if __name__ == '__main__':
     # unittest.main()
-    suite = unittest.TestLoader().loadTestsFromTestCase(testBCubeTopo)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(testBCubeTopo)
+    suite = unittest.TestSuite()
+    suite.addTest(testBCubeTopo('testEfficience'))
     unittest.TextTestRunner(verbosity=2).run(suite)
