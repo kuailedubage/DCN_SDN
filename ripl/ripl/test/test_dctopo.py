@@ -168,8 +168,8 @@ class testBCubeTopo(unittest.TestCase):
                     self.assertEqual(len(bc.g[s]), n)
 
     def testEfficience(self):
-        bc = BCubeTopo(1, 4)
-        bc.draw('bcube%s_%s' % (1, 4))
+        bc = BCubeTopo(3, 2)
+        bc.draw('bcube%s_%s' % (3, 2))
         # ft = FatTreeTopo(4, 2)
         # ft.draw('fattree%s_%s' % (4, 2))
 
