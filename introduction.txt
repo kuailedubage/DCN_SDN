@@ -1,21 +1,22 @@
 //先启动mininet，构造k-ary fattree --topo ft,<交换机端口数k>,<r:1,k/2需要被r整除> 
-e.g. $sudo mn --custom ~/ripl/ripl/mn.py --topo ft,4,1 --controller=remote --mac
-       $sudo mn --custom ~/ripl/ripl/mn.py --topo ft,4,2 --controller=remote --mac  
-
-
+e.g. $sudo mn --custom ~/DCN_SDN/ripl/ripl/mn.py --topo ft,4,1 --controller=remote --mac
+     $sudo mn --custom ~/DCN_SDN/ripl/ripl/mn.py --topo ft,4,2 --controller=remote --mac  
 
 //mininet构造好topo后，再启动pox控制器 --topo=ft,<与上面mininet保持一致>,<与上面mininet保持一致>
 e.g. $cd ~/DCN_SDN/pox
-       $python pox.py riplpox.riplpox --topo=ft,4,1 --routing=random --mode=reactive samples.pretty_log      
-        (其后跟上web messenger messenger.log_service messenger.ajax_transport poxdesk.tinytopo2 poxdesk.terminal openflow.of_service poxdesk openflow.discovery HostEvent
-        组件,在终端执行pingall，访问http://127.0.0.1:8000/poxdesk 点击左下角找到TopoViewer可以看到topo图形)
+     $./pox.py riplpox.riplpox --topo=ft,4,1 --routing=random --mode=reactive samples.pretty_log      
+(其后跟上web messenger messenger.log_service messenger.ajax_transport poxdesk.tinytopo2 poxdesk.terminal openflow.of_service poxdesk openflow.discovery HostEvent
+组件,在终端执行pingall，访问http://127.0.0.1:8000/poxdesk 点击左下角找到TopoViewer可以看到topo图形)
 
-       $python pox.py riplpox.riplpox --topo=ft,4,2 --routing=st --mode=proactive samples.pretty_log
+//$./pox.py riplpox.riplpox --topo=ft,4,2 --routing=st --mode=proactive samples.pretty_log
 
-如上参数换成 --topo bc,k,n  则构建BCube topo ------ k:层数，n:BCube0所含servers数
+如上相应参数换成 --topo bc,k,n  则构建BCube topo ------ k:层数，n:BCube0所含servers数
 
-如上参数换成 --topo ft1,k  则执行ripl自带胖树topo
+另：虚拟机环境中screen -r pox
+                 screen -r mininet
+分别进入相应shell，上下键查看历史命令，命令已经输好，改变参数即可
 
+-------------------------------------------------------------------------------------------------------------
 最初的topo在DCTopo.py中(不支持riplpox,配合pox原始组件胖树可以ping通,Bcube ping不通):
 //FatTree：sudo mn --custom ~/mininet/custom/DCTopo.py --topo fattree,k=4,r=1 --mac --controller=remote,ip=127.0.0.1,port=6633  
 //BCube： sudo mn --custom ~/mininet/custom/DCTopo.py --topo bcube,k=1,n=4 --mac --controller=remote,ip=127.0.0.1,port=6633   
