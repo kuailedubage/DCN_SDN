@@ -112,7 +112,7 @@ class StructuredTopo(Topo):
         @param name name of switch
         @return layer layer of switch
         '''
-        return self.node_info[name]['layer']
+        return self.nodeInfo(name)['layer']
 
     def isPortUp(self, port):
         ''' Returns whether port is facing up or down
@@ -613,7 +613,7 @@ class FatTreeTopo(StructuredTopo):
                 self.addLink(sw, host_id)
                 count += 1
 
-    def draw(self, filename=None, edge_width=1, node_size=1,
+    def draw(self, filename=None, edge_width=0.5, node_size=10,
              node_color='g', edge_color='b'):
         '''Generate image of RipL network.
 
@@ -636,6 +636,7 @@ class FatTreeTopo(StructuredTopo):
         #         n = sorted([int(node[2:]) for node in nodes])
         #         nodes = [ntype + str(node) for node in n]
         #         return nodes
+        G = nx.Graph()
         pos = {}  # pos[vertex] = (x, y), where x, y in [0, 1]
         for layer in range(len(self.node_specs)):
             v_boxes = len(self.node_specs)
@@ -645,15 +646,19 @@ class FatTreeTopo(StructuredTopo):
             for j, dpid in enumerate(layer_nodes):
                 pos[dpid] = ((j + 0.5) / h_boxes, height)
 
-        fig = plt.figure(1)
+        fig = plt.figure(figsize=(8, 4))
         fig.clf()
         ax = fig.add_axes([0, 0, 1, 1], frameon=False)
 
-        nx.draw_networkx_nodes(self.g, pos, ax=ax, node_size=node_size,
-                               node_color=node_color, with_labels=False)
+        nx.draw_networkx_nodes(G, pos, self.switches(), ax=ax, node_size=node_size,
+                               node_color=node_color, node_shape='s', with_labels=False, linewidths=0.5)
+        nx.draw_networkx_nodes(G, pos, self.layer_nodes(3), ax=ax, node_size=node_size,
+                               node_color='r', node_shape='o', with_labels=False, linewidths=0.5)
+        nx.draw_networkx_labels(G, pos, labels=dict((dpid, dpid) for j, dpid in enumerate(self.g.nodes())),
+                                font_size=6)
         # Work around networkx bug; does not handle color arrays properly
         for edge in self.g.edges():
-            nx.draw_networkx_edges(self.g, pos, [edge], ax=ax,
+            nx.draw_networkx_edges(G, pos, [edge], ax=ax,
                                    edge_color=edge_color, width=edge_width)
 
         # Work around networkx modifying axis limits
@@ -662,7 +667,7 @@ class FatTreeTopo(StructuredTopo):
         ax.set_axis_off()
 
         if filename:
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=160)
         else:
             plt.show()
 # ---------------------------------------------------------------------------------------------
@@ -673,7 +678,7 @@ class BCubeTopo(StructuredTopo):
     '''
 
     class BCubeNodeID(NodeID):
-        '''Fat Tree-specific node.'''
+        '''Bcube-specific node.'''
         def __init__(self, t=0, fir=0, sec=0, dpid=None, name=None):
             '''Init.
 
@@ -685,7 +690,13 @@ class BCubeTopo(StructuredTopo):
                 self.sec = (dpid & 0xff)
                 self.dpid = dpid
             elif name:
-                self.type = 1 if name[0] == 'h' else 2
+                if name[0] == 'h':
+                    self.type = 1
+                elif name[0] == 's':
+                    self.type = 2
+                else:
+                    self.type = 3
+                # self.type = 1 if name[0] == 'h' else 2
                 fir, sec = [int(s) for s in name[1:].split('_')]
                 self.fir = fir
                 self.sec = sec
@@ -697,12 +708,24 @@ class BCubeTopo(StructuredTopo):
                 self.dpid = (t << 16) + (fir << 8) + sec
 
         def __str__(self):
-            s = 'h' if self.type == 1 else 's'
+            if self.type == 1:
+                s = 'h'
+            elif self.type == 2:
+                s = 's'
+            else:
+                s = 'r'
+            # s = 'h' if self.type == 1 else 's'
             return "%s%i_%i" % (s, self.fir, self.sec)
 
         def name_str(self):
             '''Return name string'''
-            s = 'h' if self.type == 1 else 's'
+            if self.type == 1:
+                s = 'h'
+            elif self.type == 2:
+                s = 's'
+            else:
+                s = 'r'
+            # s = 'h' if self.type == 1 else 's'
             return "%s%i_%i" % (s, self.fir, self.sec)
 
         def mac_str(self):
@@ -724,7 +747,7 @@ class BCubeTopo(StructuredTopo):
         if name:
             id = self.id_gen(name=name)
             # For hosts only, set the IP
-            if layer == -1:
+            if layer == -2:  # host layer
                 d.update({'ip': id.ip_str()})
                 d.update({'mac': id.mac_str()})
             d.update({'dpid': "%016x" % id.dpid})
@@ -745,9 +768,14 @@ class BCubeTopo(StructuredTopo):
         # add host
         for i in xrange(n_hosts):
             hname = self.id_gen(1, i/n, i % n).name_str()
-            h_opts = self.def_nopts(-1, hname)
+            h_opts = self.def_nopts(-2, hname)
             # info("add %s:%s\n" % (hname, h_opts))
             self.addHost(hname, **h_opts)
+            s_hname = self.id_gen(3, i/n, i % n).name_str()
+            s_h_opts = self.def_nopts(-1, s_hname)
+            self.addSwitch(s_hname, **s_h_opts)
+            self.addLink(hname, s_hname)
+
         # add switches according level and connect with hosts
         for level in xrange(k + 1):
             # i is the horizontal position of a switch a specific level
@@ -761,14 +789,14 @@ class BCubeTopo(StructuredTopo):
                 # info("1add %s:%s\n" % (sname, s_opts))
                 sw = self.addSwitch(sname, **s_opts)
                 m = i % arg1+i/arg1*arg2
-                hosts = xrange(m, m + arg2, arg1)
+                hosts = xrange(n_hosts + m, n_hosts + m + arg2, arg1)
                 # add links between hosts and switch
                 nodeslist = self.nodes()
                 for v in hosts:
                     # info("2add %s %s\n" % (sname, self.nodes()[v]))
                     self.addLink(sw, nodeslist[v])
 
-    def draw(self, filename=None, edge_width=1, node_size=1,
+    def draw(self, filename=None, edge_width=0.5, node_size=250,
              node_color='g', edge_color='b'):
         '''Generate image of RipL network.
 
@@ -780,25 +808,31 @@ class BCubeTopo(StructuredTopo):
         '''
         import matplotlib.pyplot as plt
         import networkx as nx
-
+        G = nx.Graph()
         pos = {}  # pos[vertex] = (x, y), where x, y in [0, 1]
-        for layer in range(-1, self.k + 1):
-            v_boxes = self.k
-            height = ((layer + 1 + 0.5) / (v_boxes + 2))
+        for layer in range(-2, self.k + 1):
+            v_boxes = self.k + 1
+            height = ((layer + 2 + 0.5) / (v_boxes + 2))
             layer_nodes = sorted(self.layer_nodes(layer), key=natural)
             h_boxes = len(layer_nodes)
             for j, dpid in enumerate(layer_nodes):
                 pos[dpid] = ((j + 0.5) / h_boxes, height)
 
-        fig = plt.figure(1)
+        fig = plt.figure(figsize=(16, 9))
         fig.clf()
         ax = fig.add_axes([0, 0, 1, 1], frameon=False)
-
-        nx.draw_networkx_nodes(self.g, pos, ax=ax, node_size=node_size,
-                               node_color=node_color, with_labels=False)
+        for l in xrange(self.k+1):
+            nx.draw_networkx_nodes(G, pos, self.layer_nodes(l), ax=ax, node_size=node_size,
+                                   node_color='r', node_shape='s', with_labels=False, linewidths=0.5)
+        nx.draw_networkx_nodes(G, pos, self.layer_nodes(-2), ax=ax, node_size=node_size,
+                               node_color='g', node_shape='o', with_labels=False, linewidths=0.5)
+        nx.draw_networkx_nodes(G, pos, self.layer_nodes(-1), ax=ax, node_size=node_size,
+                               node_color='g', node_shape='s', with_labels=False, linewidths=0.5)
+        nx.draw_networkx_labels(G, pos, labels=dict((dpid, dpid) for j, dpid in enumerate(self.g.nodes())),
+                                font_size=5)
         # Work around networkx bug; does not handle color arrays properly
         for edge in self.g.edges():
-            nx.draw_networkx_edges(self.g, pos, [edge], ax=ax,
+            nx.draw_networkx_edges(G, pos, [edge], ax=ax,
                                    edge_color=edge_color, width=edge_width)
 
         # Work around networkx modifying axis limits
@@ -807,6 +841,6 @@ class BCubeTopo(StructuredTopo):
         ax.set_axis_off()
 
         if filename:
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=160)
         else:
             plt.show()
