@@ -14,6 +14,8 @@ from mininet.log import debug, info
 from mininet.topo import Topo
 from mininet.util import natural
 
+# from pox.lib.addresses import EthAddr, IPAddr
+
 PORT_BASE = 1  # starting index for OpenFlow switch ports
 
 
@@ -430,44 +432,55 @@ class FatTreeTopo(StructuredTopo):
 
     class FatTreeNodeID(NodeID):
         '''Fat Tree-specific node.'''
-        sdpidlist = []
-        slist = []
 
-        def __init__(self, dpid=None, nodetype=None, name=None):
+        def __init__(self,  ids=0, t=-1, dpid=None, name=None):
             '''Init.
 
             @param dpid dpid
             '''
             # DPID-compatible hashable identifier: opaque 64-bit unsigned int
-            self.nodetype = nodetype
-            if name:
-                self.name = name
-                if self.name[0] == 'h':
-                    self.nodetype = name[0]
-                else:
-                    self.nodetype = name[0:2]
-                if self.nodetype == 'h':
-                    self.dpid = int(name[1:]) + max(self.sdpidlist)
-                else:
-                    self.dpid = int(name[2:])
-            elif nodetype == 'sc' or nodetype == 'sa' or nodetype == 'se':
-                self.name = self.nodetype + str(dpid)
+            if dpid:
+                self.type = (dpid & 0xff0000) >> 16
+                self.ids = ((dpid & 0xff00) >> 8) * 256 + (dpid & 0xff)
                 self.dpid = dpid
-                self.sdpidlist.append(dpid)
-                self.slist.append(self.name)
-            elif dpid not in self.sdpidlist:
-                self.nodetype = 'h'
-                self.name = self.nodetype + str(dpid - max(self.sdpidlist))
-                self.dpid = dpid
+                if self.type == 3:
+                    self.typename = 'h'
+                elif self.type == 0:
+                    self.typename = 'sc'
+                elif self.type == 1:
+                    self.typename = 'sa'
+                elif self.type == 2:
+                    self.typename = 'se'
+            elif name:
+                if name[0] == 'h':
+                    self.typename = 'h'
+                    self.type = 3
+                    self.ids = int(name[1:])
+                elif name[0:2] == 'sc':
+                    self.typename = 'sc'
+                    self.type = 0
+                    self.ids = int(name[2:])
+                elif name[0:2] == 'sa':
+                    self.typename = 'sa'
+                    self.type = 1
+                    self.ids = int(name[2:])
+                elif name[0:2] == 'se':
+                    self.typename = 'se'
+                    self.type = 2
+                    self.ids = int(name[2:])
+                self.dpid = (self.type << 16) + self.ids
             else:
-                if 'sc' + str(dpid) in self.slist:
-                    self.nodetype = 'sc'
-                elif 'sa' + str(dpid) in self.slist:
-                    self.nodetype = 'sa'
-                else:
-                    self.nodetype = 'se'
-                self.name = self.nodetype + str(dpid)
-                self.dpid = dpid
+                self.type = t
+                self.ids = ids
+                self.dpid = (t << 16) + ids
+                if self.type == 3:
+                    self.typename = 'h'
+                elif self.type == 0:
+                    self.typename = 'sc'
+                elif self.type == 1:
+                    self.typename = 'sa'
+                elif self.type == 2:
+                    self.typename = 'se'
 
         def __str__(self):
             '''String conversion.
@@ -481,17 +494,14 @@ class FatTreeTopo(StructuredTopo):
 
             @return name name as string
             '''
-            if self.nodetype == 'h':
-                return self.nodetype + str(self.dpid - max(self.sdpidlist))
-            else:
-                return self.nodetype + str(self.dpid)
+            return self.typename + str(self.ids)
 
         def mac_str(self):
             '''Return MAC string'''
-            # if self.nodetype == 'h':
-            #     return "00:00:00:02:00:%02x" % (self.dpid - max(self.sdpidlist))
-            # else:
-            return "00:00:00:00:00:%02x" % self.dpid
+
+            return "00:00:00:%02x:%02x:%02x" % \
+                   (self.type, self.ids//256, self.ids % 256)
+            # return EthAddr("%012x" % (self.dpid,))
 
         def ip_str(self):
             '''Name conversion.
@@ -499,7 +509,9 @@ class FatTreeTopo(StructuredTopo):
             @return ip ip as string
             '''
             # if self.nodetype == 'h':
-            return "10.0.0.%i" % (self.dpid - max(self.sdpidlist))
+            return "10.%i.%i.%i" % (self.type, self.ids//256, self.ids % 256)
+            # return IPAddr("%012x" % (self.dpid,))
+
             # else:
             #     return "10.0.0.%i" % self.dpid
 
@@ -529,6 +541,7 @@ class FatTreeTopo(StructuredTopo):
             id = self.id_gen(name=name)
             # For hosts only, set the IP
             if layer == self.LAYER_HOST:
+                # pass
                 d.update({'ip': id.ip_str()})
                 d.update({'mac': id.mac_str()})
             d.update({'dpid': "%016x" % id.dpid})
@@ -541,14 +554,7 @@ class FatTreeTopo(StructuredTopo):
         @param r oversubscription ratios
         @param speed bandwidth in Gbps
         '''
-        core = StructuredNodeSpec(0, k, None, speed, type_str='core')
-        agg = StructuredNodeSpec((k / 2) / r, k / 2, speed, speed, type_str='agg')
-        edge = StructuredNodeSpec(k / 2, k / 2, speed, speed,
-                                  type_str='edge')
-        host = StructuredNodeSpec(1, 0, speed, None, type_str='host')
-        node_specs = [core, agg, edge, host]
-        edge_specs = [StructuredEdgeSpec(speed)] * 3
-        super(FatTreeTopo, self).__init__(node_specs, edge_specs)
+        Topo.__init__(self)
 
         self.k = k
         self.r = r
@@ -561,7 +567,7 @@ class FatTreeTopo(StructuredTopo):
         # Create core nodes
         for i in xrange(n_core):
             # dpid = i + 1
-            core_switch_id = self.id_gen(i + 1, 'sc').name_str()
+            core_switch_id = self.id_gen(i + 1, 0).name_str()
             core_opts = self.def_nopts(self.LAYER_CORE, core_switch_id)
             self.addSwitch(core_switch_id, **core_opts)
             s.append(core_switch_id)
@@ -577,14 +583,14 @@ class FatTreeTopo(StructuredTopo):
             edge_nodes = xrange(edge_start_node, edge_end_node)
             for i in aggr_nodes:
                 # dpid = i
-                agg_switch_id = self.id_gen(i, 'sa').name_str()
+                agg_switch_id = self.id_gen(i, 1).name_str()
                 agg_opts = self.def_nopts(self.LAYER_AGG, agg_switch_id)
                 self.addSwitch(agg_switch_id, **agg_opts)
                 s.append(agg_switch_id)
                 # info("Added agg_switch  %s, dpid = %s" % (agg_switch_id, dpid) + "\n")
             for j in edge_nodes:
                 # dpid = j
-                edge_switch_id = self.id_gen(j, 'se').name_str()
+                edge_switch_id = self.id_gen(j, 2).name_str()
                 edge_opts = self.def_nopts(self.LAYER_EDGE, edge_switch_id)
                 self.addSwitch(edge_switch_id, **edge_opts)
                 s.append(edge_switch_id)
@@ -600,13 +606,13 @@ class FatTreeTopo(StructuredTopo):
                 self.addLink(s[core_node], s[aggr_node])
 
         # Create hosts and connect them to edge switches
-        count = len(s) + 1
-        xrange(k//r+k//2, k//2)
+        count = 1
+        # xrange(k//r+k//2, k//2)
         e_s = sorted(self.layer_nodes(self.LAYER_EDGE), key=natural)
         for sw in e_s:
             for i in xrange(k / 2):
                 # dpid = count
-                host_id = self.id_gen(count, 'h').name_str()
+                host_id = self.id_gen(count, 3).name_str()
                 host_opts = self.def_nopts(self.LAYER_HOST, host_id)
                 self.addHost(host_id, **host_opts)
                 # info("Added %s, dpid = %s" % (host_id, host_opts) + "\n")

@@ -7,6 +7,9 @@ import random
 from struct import pack
 from zlib import crc32
 
+from collections import defaultdict
+import time
+
 from pox.core import core
 from pox.lib.util import dpidToStr
 import pox.openflow.libopenflow_01 as of
@@ -28,7 +31,7 @@ MISS_SEND_LEN = 2000
 MODES = ['reactive', 'proactive']
 DEF_MODE = MODES[0]
 
-IDLE_TIMEOUT = 100
+IDLE_TIMEOUT = 10
 
 
 # Borrowed from pox/forwarding/l2_multi
@@ -40,7 +43,7 @@ class Switch(object):
         self._listeners = None
 
     def __repr__(self):
-        return dpidToStr(self.dpid)
+        return core.RipLController.t.id_gen(dpid=self.dpid).name_str()
 
     def disconnect(self):
         if self.connection is not None:
@@ -139,8 +142,10 @@ class RipLController(object):
         in_name = self.t.id_gen(dpid=event.dpid).name_str()
         out_name = self.t.id_gen(dpid=out_dpid).name_str()
         hash_ = self._ecmp_hash(packet)
+        # log.info(("%s-->%s" % sr)
         route = self.r.get_route(in_name, out_name, hash_)
-        log.info("route: %s" % route)
+
+        # log.info("route: %s" % route)
         match = of.ofp_match.from_packet(packet)
         for i, node in enumerate(route):
             node_dpid = self.t.id_gen(name=node).dpid
@@ -152,7 +157,15 @@ class RipLController(object):
             self.switches[node_dpid].install(out_port, match, idle_timeout=IDLE_TIMEOUT)
 
     def _eth_to_int(self, eth):
-        return sum(([ord(x) * 2 ** ((5 - i) * 8) for i, x in enumerate(eth.raw)]))
+        t = -1
+        ids = 0
+        for i, x in enumerate(eth.raw):
+            if i == 3:
+                t = ord(x)
+            if i == 4 or i == 5:
+                ids += ord(x)*256**(5-i)
+        return (t << 16) + ids
+        # return sum(([ord(x) * 2 ** ((5 - i) * 8) for i, x in enumerate(eth.raw)]))
 
     def _int_to_eth(self, inteth):
         return EthAddr("%012x" % (inteth,))
@@ -166,15 +179,18 @@ class RipLController(object):
 
         src and dst are unsigned ints.
         """
-        src_sw = self.t.up_nodes(self.t.id_gen(dpid=src).name_str())
-        assert len(src_sw) == 1
-        src_sw_name = src_sw[0]
-        dst_sw = self.t.up_nodes(self.t.id_gen(dpid=dst).name_str())
-        assert len(dst_sw) == 1
-        dst_sw_name = dst_sw[0]
+        # time.sleep(10)
+        if src == dst:
+            return
+        src_h_name = self.t.id_gen(dpid=src).name_str()
+        dst_h_name = self.t.id_gen(dpid=dst).name_str()
+        src_sw_name = self.t.g[src_h_name].keys()[0]
+        dst_sw_name = self.t.g[dst_h_name].keys()[0]
         hash_ = self._src_dst_hash(src, dst)
+        print
+        log.info("%s-->%s" % (src_h_name, dst_h_name))
         route = self.r.get_route(src_sw_name, dst_sw_name, hash_)
-        log.info("route: %s" % route)
+        # log.info("route: %s" % route)
 
         # Form OF match
         match = of.ofp_match()
@@ -201,14 +217,26 @@ class RipLController(object):
 
         # Broadcast to every output port except the input on the input switch.
         # Hub behavior, baby!
-        for sw in self._raw_dpids(t.layer_nodes(t.LAYER_EDGE)):
+        sw_name = t.id_gen(dpid=dpid).name_str()
+        flood_ports = defaultdict(lambda: [])
+
+        for h in t.hosts():
+            sw = t.g[h].keys()[0]
+            sw_port = t.ports[h].values()[0][1]
+            if sw != sw_name or (sw == sw_name and in_port != sw_port):
+                flood_ports[sw].append(sw_port)
+        # print flood_ports
+        adjacency = defaultdict(lambda: defaultdict(lambda: None))
+
+        for sw1, value1 in t.ports.items():
+            if sw1[0] != 'h':
+                for port, value2 in value1.items():
+                    if value2[0][0] != 'h':
+                        adjacency[sw1][value2[0]] = port
+        # print adjacency
+        for sw in flood_ports:
             # log.info("considering sw %s" % sw)
-            ports = []
-            sw_name = t.id_gen(dpid=sw).name_str()
-            for host in t.down_nodes(sw_name):
-                sw_port, host_port = t.port(sw_name, host)
-                if sw != dpid or (sw == dpid and in_port != sw_port):
-                    ports.append(sw_port)
+            ports = flood_ports[sw]
             # Send packet out each non-input host port
             # TODO: send one packet only.
             for port in ports:
@@ -217,7 +245,8 @@ class RipLController(object):
                 # if sw == dpid:
                 #   self.switches[sw].send_packet_bufid(port, event.ofp.buffer_id)
                 # else:
-                self.switches[sw].send_packet_data(port, event.data)
+                sw_dpid = t.id_gen(name=sw).dpid
+                self.switches[sw_dpid].send_packet_data(port, event.data)
                 #  buffer_id = None
 
     def _handle_packet_reactive(self, event):
@@ -229,12 +258,19 @@ class RipLController(object):
 
         # Learn MAC address of the sender on every packet-in.
         self.macTable[packet.src] = (dpid, in_port)
-
+        # print self.macTable
         # log.info("mactable: %s" % self.macTable)
 
         # Insert flow, deliver packet directly to destination.
         if packet.dst in self.macTable:
+
+            src_dpid = self._eth_to_int(packet.src)
+            dst_dpid = self._eth_to_int(packet.dst)
+            src_h_name = self.t.id_gen(dpid=src_dpid).name_str()
+            dst_h_name = self.t.id_gen(dpid=dst_dpid).name_str()
             out_dpid, out_port = self.macTable[packet.dst]
+            print
+            log.info("%s-->%s" % (src_h_name, dst_h_name))
             self._install_reactive_path(event, out_dpid, out_port, packet)
 
             # log.info("sending to entry in mactable: %s %s" % (out_dpid, out_port))
@@ -245,11 +281,11 @@ class RipLController(object):
 
     def _handle_packet_proactive(self, event):
         packet = event.parse()
-
+        t = self.t
         if packet.dst.is_multicast:
             self._flood(event)
         else:
-            hosts = self._raw_dpids(self.t.layer_nodes(self.t.LAYER_HOST))
+            hosts = self._raw_dpids(t.hosts())
             if self._eth_to_int(packet.src) not in hosts:
                 raise Exception("unrecognized src: %s" % packet.src)
             if self._eth_to_int(packet.dst) not in hosts:
@@ -270,8 +306,9 @@ class RipLController(object):
     def _install_proactive_flows(self):
         t = self.t
         # Install L2 src/dst flow for every possible pair of hosts.
-        for src in sorted(self._raw_dpids(t.layer_nodes(t.LAYER_HOST))):
-            for dst in sorted(self._raw_dpids(t.layer_nodes(t.LAYER_HOST))):
+        for src in sorted(self._raw_dpids(t.hosts())):
+
+            for dst in sorted(self._raw_dpids(t.hosts())):
                 self._install_proactive_path(src, dst)
 
     def _handle_ConnectionUp(self, event):
@@ -296,6 +333,7 @@ class RipLController(object):
             log.info("Woo!  All switches up")
             self.all_switches_up = True
             if self.mode == 'proactive':
+                # time.sleep(10)
                 self._install_proactive_flows()
 
 
@@ -315,7 +353,6 @@ def launch(topo=None, routing=None, mode=None):
     else:
         t = buildTopo(topo, topos)
         r = getRouting(routing, t)
-
     core.registerNew(RipLController, t, r, mode)
 
     log.info("RipL-POX running with topo=%s." % topo)

@@ -7,13 +7,14 @@ Routing engine base class.
 '''
 from copy import copy
 from random import choice
+from collections import defaultdict
 
 import logging
 lg = logging.getLogger('ripl.routing')
 
 DEBUG = False
 
-lg.setLevel(logging.WARNING)
+lg.setLevel(logging.INFO)
 if DEBUG:
     lg.setLevel(logging.DEBUG)
     lg.addHandler(logging.StreamHandler())
@@ -318,3 +319,154 @@ class HashedStructuredRouting(StructuredRouting):
 
         super(HashedStructuredRouting, self).__init__(topo, choose_hashed)
 # pylint: enable-msg=W0613
+
+
+class DCRouting(Routing):
+
+    def __init__(self, topo, path_choice):
+        '''Create Routing object.
+
+        @param topo Topo object
+        @param path_choice path choice function (see examples below)
+        '''
+        self.topo = topo
+        self.path_choice = path_choice
+
+        # self.adjacency:  Adjacency map.  [sw1][sw2] -> port from sw1 to sw2
+        self.adjacency = defaultdict(lambda: defaultdict(lambda: None))
+        # self.path_map: [sw1][sw2] -> (distance, intermediate)
+        self.path_map = defaultdict(lambda: defaultdict(lambda: [(None, None)]))
+        # build path_map and adjacency
+        self._calc_paths()
+
+    def _calc_paths(self):
+        """
+        Essentially Floyd-Warshall algorithm
+        """
+        # build adjacency
+        for sw1, value1 in self.topo.ports.items():
+            if sw1[0] != 'h':
+                for port, value2 in value1.items():
+                    if value2[0][0] != 'h':
+                        self.adjacency[sw1][value2[0]] = port
+
+        def dump():
+            for i in sws:
+                for j in sws:
+                    a = self.path_map[i][j][0]
+                    # a = adjacency[i][j]
+                    if a is None:
+                        a = "*"
+                    print a,
+                print
+
+        # build path_map
+        sws = self.topo.switches()
+        self.path_map.clear()
+        for k in sws:
+            for j, port in self.adjacency[k].iteritems():
+                if port is None:
+                    continue
+                self.path_map[k][j] = [(1, None)]
+            self.path_map[k][k] = [(0, None)]  # distance, intermediate
+
+        for k in sws:
+            for i in sws:
+                for j in sws:
+                    if self.path_map[i][k][0][0] is not None:
+                        if self.path_map[k][j][0][0] is not None:
+                            # i -> k -> j exists
+                            ikj_dist = self.path_map[i][k][0][0] + self.path_map[k][j][0][0]
+                            if self.path_map[i][j][0][0] is None or ikj_dist < self.path_map[i][j][0][0]:
+                                # i -> k -> j is better than existing
+                                self.path_map[i][j] = [(ikj_dist, k)]
+                            if ikj_dist == self.path_map[i][j][0][0] and k not in [i, j, self.path_map[i][j][0][1]]:
+                                self.path_map[i][j].append((ikj_dist, k))
+
+    def _get_one_raw_path(self, src, dst):
+        """
+        Get a raw path (just a list of nodes to traverse)
+        """
+        if len(path_map) == 0:
+            _calc_paths()
+        if src is dst:
+            # We're here!
+            return []
+        if self.path_map[src][dst][0][0] is None:
+            # Not connected
+            return None
+        intermediate = self.path_map[src][dst][0][1]
+        if intermediate is None:
+            # Directly connected
+            return []
+        return _get_raw_path(src, intermediate) + [intermediate] + \
+            _get_raw_path(intermediate, dst)
+
+    def _get_multi_raw_path(self, src, dst):
+        """
+        Get all raw paths (just multiple lists of nodes to traverse)
+        """
+        if len(self.path_map) == 0:
+            self._calc_paths()
+        if src is dst:
+            # We're here!
+            return []
+
+        if self.path_map[src][dst][0][0] is None:
+            # Not connected
+            return None
+        multi_path = []
+        for distance, intermediate in self.path_map[src][dst]:
+            if intermediate is None:
+                # Directly connected
+                return [[]]
+            for path1 in self._get_multi_raw_path(src, intermediate):
+                for path2 in self._get_multi_raw_path(intermediate, dst):
+                    multi_path.append(path1 + [intermediate] + path2)
+        return multi_path
+
+    def get_route(self, src, dst, hash_):
+        # Start with a raw path...
+        if src == dst:
+            path = [src]
+            return path
+        else:
+            raw_paths_found = self._get_multi_raw_path(src, dst)
+            if raw_paths_found is None:
+                return None
+            paths_found = []
+            for p in raw_paths_found:
+                paths_found.append([src] + p + [dst])
+
+            path_chosen = self.path_choice(paths_found, src, dst, hash_)
+
+            return path_chosen
+
+
+class BCSinglePathRouting(DCRouting):
+    '''Hashed Structured Routing.'''
+
+    def __init__(self, topo):
+        '''Create StructuredRouting object.
+
+        @param topo Topo object
+        '''
+
+        def choose_single_path(paths, src, dst, hash_):
+            '''Choose consistent hashed path
+
+            @param path paths of dpids generated by a routing engine
+            @param src src dpid
+            @param dst dst dpid
+            @param hash_ hash value
+            '''
+            lg.info('********ALL PATHS********')
+            for path in paths:
+                lg.info(path)
+            path = choice(paths) 
+            lg.info('CHOOSE: %s' % path)
+            return path
+
+        super(BCSinglePathRouting, self).__init__(topo, choose_single_path)
+
+        # pylint: enable-msg=W0613
