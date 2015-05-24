@@ -59,11 +59,11 @@ waiting_paths = {}
 FLOOD_HOLDDOWN = 5
 
 # Flow timeouts
-FLOW_IDLE_TIMEOUT = 20
-FLOW_HARD_TIMEOUT = 40
+FLOW_IDLE_TIMEOUT = 1000
+FLOW_HARD_TIMEOUT = 2000
 
 # How long is allowable to set up a path?
-PATH_SETUP_TIME = 5
+PATH_SETUP_TIME = 1000
 
 
 def _calc_paths():
@@ -224,7 +224,6 @@ class WaitingPath(object):
         self.first_switch = path[0][0].dpid
         self.xids = set()
         self.packet = packet
-        print '***********', waiting_paths
         if len(waiting_paths) > 1000:
             WaitingPath.expire_waiting_paths()
 
@@ -359,7 +358,7 @@ class Switch(EventMixin):
                     event.parsed.find('ipv4')):
                 # It's IP -- let's send a destination unreachable
                 log.info("Dest unreachable (%s -> %s)",
-                          match.dl_src, match.dl_dst)
+                         match.dl_src, match.dl_dst)
 
                 from pox.lib.addresses import EthAddr
 
@@ -408,7 +407,7 @@ class Switch(EventMixin):
                 if self.is_holding_down:
                     log.warning("Not flooding -- holddown active")
                     # return
-                msg = of.ofp_packet_out()
+                msg = of.ofp_packet_out(data=event.ofp)
                 # OFPP_FLOOD is optional; some switches may need OFPP_ALL
                 msg.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
                 msg.buffer_id = event.ofp.buffer_id
@@ -478,6 +477,7 @@ class Switch(EventMixin):
                         match.dl_dst = packet.dst
 
                         self.install_path(dest[0], dest[1], match, event)
+                        # TODO
 
     def disconnect(self):
         if self.connection is not None:
@@ -605,7 +605,7 @@ def launch(topo=None):
     import pox.openflow.discovery
     pox.openflow.discovery.launch()
     import pox.openflow.spanning_tree
-    pox.openflow.spanning_tree.launch(hold_down=True)
+    pox.openflow.spanning_tree.launch()
 
     global topotype
     topotype = topo

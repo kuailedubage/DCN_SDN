@@ -182,14 +182,18 @@ class RipLController(object):
         # time.sleep(10)
         if src == dst:
             return
-        src_h_name = self.t.id_gen(dpid=src).name_str()
-        dst_h_name = self.t.id_gen(dpid=dst).name_str()
-        src_sw_name = self.t.g[src_h_name].keys()[0]
-        dst_sw_name = self.t.g[dst_h_name].keys()[0]
+        src_host_name = self.t.id_gen(dpid=src).name_str()
+        dst_host_name = self.t.id_gen(dpid=dst).name_str()
+        src_sw_name = self.t.g[src_host_name].keys()[0]
+        dst_sw_name = self.t.g[dst_host_name].keys()[0]
         hash_ = self._src_dst_hash(src, dst)
         print
-        log.info("%s-->%s" % (src_h_name, dst_h_name))
+        log.info("%s<-->%s" % (src_host_name, dst_host_name))
         route = self.r.get_route(src_sw_name, dst_sw_name, hash_)
+        count = len(route)
+        route_reverse = []
+        for i in range(count):
+            route_reverse.append(route[count-i-1])
         # log.info("route: %s" % route)
 
         # Form OF match
@@ -197,7 +201,6 @@ class RipLController(object):
         match.dl_src = self._int_to_eth(src)
         match.dl_dst = self._int_to_eth(dst)
 
-        dst_host_name = self.t.id_gen(dpid=dst).name_str()
         final_out_port, ignore = self.t.port(route[-1], dst_host_name)
         for i, node in enumerate(route):
             node_dpid = self.t.id_gen(name=node).dpid
@@ -207,6 +210,18 @@ class RipLController(object):
             else:
                 out_port = final_out_port
             self.switches[node_dpid].install(out_port, match)
+
+        # reverse
+
+        final_out_port, ignore = self.t.port(route_reverse[-1], src_host_name)
+        for i, node in enumerate(route_reverse):
+            node_dpid = self.t.id_gen(name=node).dpid
+            if i < len(route_reverse) - 1:
+                next_node = route_reverse[i + 1]
+                out_port, next_in_port = self.t.port(node, next_node)
+            else:
+                out_port = final_out_port
+            self.switches[node_dpid].install(out_port, match.flip())
 
     def _flood(self, event):
         packet = event.parsed
@@ -306,9 +321,11 @@ class RipLController(object):
     def _install_proactive_flows(self):
         t = self.t
         # Install L2 src/dst flow for every possible pair of hosts.
-        for src in sorted(self._raw_dpids(t.hosts())):
-
-            for dst in sorted(self._raw_dpids(t.hosts())):
+        hl = sorted(self._raw_dpids(t.hosts()))
+        hll = sorted(self._raw_dpids(t.hosts()))
+        for src in hl:
+            del hll[0]
+            for dst in hll:
                 self._install_proactive_path(src, dst)
 
     def _handle_ConnectionUp(self, event):

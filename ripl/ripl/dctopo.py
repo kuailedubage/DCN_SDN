@@ -614,7 +614,7 @@ class FatTreeTopo(StructuredTopo):
                 # dpid = count
                 host_id = self.id_gen(count, 3).name_str()
                 host_opts = self.def_nopts(self.LAYER_HOST, host_id)
-                self.addHost(host_id, **host_opts)
+                self.addHost(host_id, cpu=.3/(k**3/4), **host_opts)
                 # info("Added %s, dpid = %s" % (host_id, host_opts) + "\n")
                 self.addLink(sw, host_id)
                 count += 1
@@ -850,3 +850,40 @@ class BCubeTopo(StructuredTopo):
             plt.savefig(filename, dpi=160)
         else:
             plt.show()
+
+
+class TestBedTopo(Topo):
+
+    def __init__(self):
+        "Create custom topo."
+        Topo.__init__(self)
+        self.addHost('h1')
+        self.addHost('h2')
+        self.addSwitch('sc1')
+        self.addSwitch('sc2')
+        self.addSwitch('sa3')
+        self.addSwitch('sa4')
+        self.addSwitch('se5')
+        self.addSwitch('se6')
+        self.addSwitch('sa7')
+        self.addSwitch('sa8')
+        self.addSwitch('se9')
+        self.addSwitch('se10')
+        self.addLink('sc1', 'sa3')
+        self.addLink('sc1', 'sa4')
+        self.addLink('sc1', 'sa7')
+        self.addLink('sc1', 'sa8')
+        self.addLink('sc2', 'sa3')
+        self.addLink('sc2', 'sa4')
+        self.addLink('sc2', 'sa7')
+        self.addLink('sc2', 'sa8')
+        self.addLink('sa3', 'se5')
+        self.addLink('sa3', 'se6')
+        self.addLink('sa4', 'se5')
+        self.addLink('sa4', 'se6')
+        self.addLink('sa7', 'se9')
+        self.addLink('sa7', 'se10')
+        self.addLink('sa8', 'se9')
+        self.addLink('sa8', 'se10')
+        self.addLink('se5', 'h1')
+        self.addLink('se10', 'h2')
